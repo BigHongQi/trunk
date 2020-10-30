@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.liuhq.o2o.dao.UserShopMapDao">
+	<resultMap id="userShopResultMap" type="com.liuhq.o2o.entity.UserShopMap">
+		<id column="user_shop_id" property="userShopId" />
+		<result column="user_id" property="userId" />
+		<result column="shop_id" property="shopId" />
+		<result column="user_name" property="userName" />
+		<result column="shop_name" property="shopName" />
+		<result column="create_time" property="createTime" />
+		<result column="point" property="point" />
+		<association property="user" column="user_id"
+			javaType="com.liuhq.o2o.entity.PersonInfo">
+			<id column="user_id" property="userId" />
+			<result column="name" property="name" />
+		</association>
+		<association property="shop" column="shop_id"
+			javaType="com.liuhq.o2o.entity.Shop">
+			<id column="shop_id" property="shopId" />
+			<result column="shop_name" property="shopName" />
+		</association>
+	</resultMap>
+	
+	<select id="queryUserShopMapList" resultMap="userShopResultMap">
+		SELECT
+		u.user_shop_id,
+		u.create_time,
+		u.user_name,
+		u.shop_name,
+		u.point,
+		buyer.user_id,
+		buyer.name,
+		s.shop_id,
+		s.shop_name
+		FROM
+		tb_user_shop_map u,
+		tb_person_info buyer,
+		tb_shop s
+		<where>
+			u.user_id = buyer.user_id
+			and
+			u.shop_id = s.shop_id
+			<!-- 按照顾客信息精准查询 -->
+			<if test="userShopCondition.userId != null">
+			    and u.user_id = #{userShopCondition.userId}
+			</if>
+			<!-- 按店铺信息精确查询 -->
+			<if test="userShopCondition.shopId !=null">
+			    and u.shop_id = #{userShopCondition.shopId}
+			</if>
+			<!-- 按顾客名字模糊查询 -->
+			<if test="userShopCondition.userName != null">
+			    and buyer.name like '%${#{userShopCondition.userName}}%' 
+			</if>
+			<!-- 按商品名字模糊查询 -->
+			<if test="userShopCondition.shopName != null">
+			    and s.shop_name like '%${#{userShopCondition.shopName}}%' 
+			</if>
+			<!-- 按创建时间范围查询 -->
+			<if test="userShopCondition.createTime !=null">
+			    and u.create_time > #{userShopCondition.createTime}
+			</if>
+		</where>
+		LIMIT #{rowIndex},#{pageSize};
+	</select>
+
+	<select id="queryUserShopMapCount" resultType="int">
+		SELECT count(1) FROM
+		tb_user_shop_map u,
+		tb_person_info buyer,
+		tb_shop s
+		<where>
+			u.user_id = buyer.user_id
+			and
+			u.shop_id = s.shop_id
+			<!-- 按照顾客信息精准查询 -->
+			<if test="userShopCondition.userId != null">
+			    and u.user_id = #{userShopCondition.userId}
+			</if>
+			<!-- 按店铺信息精确查询 -->
+			<if test="userShopCondition.shopId !=null">
+			    and u.shop_id = #{userShopCondition.shopId}
+			</if>
+			<!-- 按顾客名字模糊查询 -->
+			<if test="userShopCondition.userName != null">
+			    and buyer.name like '%${#{userShopCondition.userName}}%' 
+			</if>
+			<!-- 按商品名字模糊查询 -->
+			<if test="userShopCondition.shopName != null">
+			    and s.shop_name like '%${#{userShopCondition.shopName}}%' 
+			</if>
+			<!-- 按创建时间范围查询 -->
+			<if test="userShopCondition.createTime !=null">
+			    and u.create_time > #{userShopCondition.createTime}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryUserShopMap" resultMap="userShopResultMap">
+	    SELECT
+		u.user_shop_id,
+		u.create_time,
+		u.user_name,
+		u.shop_name,
+		u.point,
+		buyer.user_id,
+		buyer.name,
+		s.shop_id,
+		s.shop_name
+		FROM
+		tb_user_shop_map u,
+		tb_person_info buyer,
+		tb_shop s
+		WHERE
+		u.user_id = buyer.user_id
+		and
+		u.shop_id = s.shop_id
+		and
+		u.user_id = #{userId}
+		and
+		u.shop_id = #{shopId}
+	</select>
+	
+	<insert id="insertUserShopMap" parameterType="com.liuhq.o2o.entity.UserShopMap"
+		useGeneratedKeys="true" keyProperty="userShopId" keyColumn="user_shop_id">
+		INSERT INTO
+		tb_user_shop_map(user_id,shop_id,user_name,shop_name,create_time,point)
+		VALUES
+		(#{userId},#{shopId},#{userName},#{shopName},#{createTime},#{point})
+	</insert>
+	
+	<update id="updateUserShopMapPoint" parameterType="com.liuhq.o2o.entity.UserShopMap"
+	  useGeneratedKeys="true" keyProperty="userShopId"  keyColumn="user_shop_id">
+	UPDATE tb_user_shop_map
+	SET point=#{point}
+	where user_id = #{userId}
+	AND
+	shop_id = #{shopId}
+	</update>
+	
+</mapper>
